@@ -42,7 +42,7 @@ body {
   background-color: transparent;
 }
 #web_bg {
-  background: ;
+  background: url("https://w.wallhaven.cc/full/ey/wallhaven-ey2rmk.jpg");
   height: 100%;
   width: 100%;
   -webkit-background-size: cover;
@@ -1089,7 +1089,7 @@ blockquote {
 }
 #vcomment textarea {
   font-size: 0.7rem;
-  background: url("/img/comment_bg.png") 100% 100% no-repeat;
+  background: url("/img/comment_bg.jpg") 100% 100% no-repeat;
 }
 #vcomment .info {
   display: none;
